@@ -225,7 +225,7 @@ const solver = function() {
     if (node > 80) {
         return
     }
-
+    direction = 1
     //get the value in the node
     let currentValue = currentSquare.innerHTML
     if (currentValue == '') {
@@ -238,19 +238,11 @@ const solver = function() {
     if (valueIsValid(node)) {
         node +=1
 
-    } else {
-        
-        if (currentValue >= 9){
-            currentValue = ''
-            direction = -1
-            node+=(1*direction)
-            currentSquare.innerHTML = currentValue
-        } else {
-            direction = 1
-        }
-        
-    
-        
+    } else if (currentValue >= 9){
+        currentValue = ''
+        direction = -1
+        node+=(1*direction)
+        currentSquare.innerHTML = currentValue  
     }
     if (node < 0){
         document.getElementById("disp").innerHTML='Puzzle has no Solution'
