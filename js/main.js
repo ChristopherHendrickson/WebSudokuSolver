@@ -15,6 +15,7 @@ const rowLib = {}
 const colLib = {}
 const bigSquareLib = {}
 let direction = 1
+let intervalID = ''
 
 const getCurrentRow = function(n){
     return Math.floor((n%9)/3) + 3*Math.floor(n/27)
@@ -78,10 +79,12 @@ const generateInputBoard = function(defaultPuzzleNumbers) {
 
 const showSolveButton = function () {
     document.getElementById("solveButton").style.display="inline-block";
+    document.getElementById("solveFastButton").style.display="inline-block";
     document.getElementById("unsolveButton").style.display="none";
 }
 const showUnsolveButton = function () {
     document.getElementById("solveButton").style.display="none";
+    document.getElementById("solveFastButton").style.display="none";
     document.getElementById("unsolveButton").style.display="inline-block";
 }
 
@@ -172,13 +175,34 @@ const start = function(){
         showUnsolveButton()
         startLoaderBorder()
         document.getElementById("disp").innerHTML=''
+        intervalID = setInterval(solver,0)
+    }
+}
+
+const startFast = function(){
+    puzzleNumbers = []
+    for (let i=0;i<81;i++) {
+        puzzleNumbers.push(document.getElementById("square"+i).value)
+    }
+    convertBoardToDivs()
+    assignSquaresToLibs()
+    resetNode()
+
+    if (!boardIsValid()) {
+
+        generateInputBoard(puzzleNumbers)
+        document.getElementById("disp").innerHTML='Invalid Board'
+    } else {
+        showUnsolveButton()
+        startLoaderBorder()
+        document.getElementById("disp").innerHTML=''
         setTimeout(solveLoop,20)
     }
 }
 
 const solveLoop = function() {
-    
-    while (node < 81 & node >= 0){
+
+while (node < 81 & node >= 0){
         solver()
     }
     stopLoaderBorder()
@@ -223,7 +247,10 @@ const solver = function() {
         }
     }
     if (node > 80) {
+        stopLoaderBorder()
+        clearInterval(intervalID)
         return
+
     }
     direction = 1
     //get the value in the node
@@ -247,12 +274,15 @@ const solver = function() {
     if (node < 0){
         document.getElementById("disp").innerHTML='Puzzle has no Solution'
         unsolve()
+        stopLoaderBorder()
+        clearInterval(intervalID)
         return
     }
 
 }
 
 document.getElementById("solveButton").addEventListener("click", start);
+document.getElementById("solveFastButton").addEventListener("click", startFast);
 
 
 document.getElementById("unsolveButton").addEventListener("click", unsolve);
