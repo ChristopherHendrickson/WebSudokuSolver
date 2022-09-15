@@ -1,4 +1,4 @@
-let node = 0
+let node = 82
 let puzzleNumbers = []
 const emptyPuzzleNumbers = [
     '','','','','','','','','','','','','','','','','','','','','','','','','','','',
@@ -16,6 +16,14 @@ const colLib = {}
 const bigSquareLib = {}
 let direction = 1
 let intervalID = ''
+let solveSpeed = 1
+
+const setNewSolvespeed = function(){
+    solveSpeed = 1000-document.getElementById('speedSlider').value
+    clearInterval(intervalID)
+    intervalID = setInterval(solver,solveSpeed)
+}
+
 
 const getCurrentRow = function(n){
     return Math.floor((n%9)/3) + 3*Math.floor(n/27)
@@ -91,7 +99,7 @@ const showUnsolveButton = function () {
 const startLoaderBorder = function () {
     document.getElementById("board").style.padding="10px";
     document.getElementById("board").style.border="0";
-}
+}   
 
 const stopLoaderBorder = function () {
     document.getElementById("board").style.padding="0";
@@ -108,6 +116,7 @@ const boardIsValid = function(){
             return false
         }
         if (!valueIsValid(i)) {
+            console.log('v')
             return false
         }
     }
@@ -123,21 +132,28 @@ const valueIsValid = function(n) {
         if (valueChecking >9) {
             valid = false
         }
+        bigSquareLib[String(getCurrentBigSquare(String(n)))].forEach(squareDiv => {
+            if (valueChecking===squareDiv.innerHTML & document.getElementById("square"+String(n))!==squareDiv){
+                squareDiv.classList.toggle('clash',true)
+                setTimeout(()=>{squareDiv.classList.toggle('clash',false)},solveSpeed)
+                valid = false
+            }
+        })
         rowLib[String(getCurrentRow(String(n)))].forEach(squareDiv => {
             if (valueChecking===squareDiv.innerHTML & document.getElementById("square"+String(n))!==squareDiv){
+                squareDiv.classList.toggle('clash',true)
+                setTimeout(()=>{squareDiv.classList.toggle('clash',false)},solveSpeed)
                 valid = false //will add a function to edit css to flash red on conflicts, so not returning after first conflict found
             }
         })
         colLib[String(getCurrentCol(String(n)))].forEach(squareDiv => {
             if (valueChecking===squareDiv.innerHTML & document.getElementById("square"+String(n))!==squareDiv){
+                squareDiv.classList.toggle('clash',true)
+                setTimeout(()=>{squareDiv.classList.toggle('clash',false)},solveSpeed)
                 valid = false
             }
         })
-        bigSquareLib[String(getCurrentBigSquare(String(n)))].forEach(squareDiv => {
-            if (valueChecking===squareDiv.innerHTML & document.getElementById("square"+String(n))!==squareDiv){
-                valid = false
-            }
-        })
+
     }
     return valid
     
@@ -165,17 +181,17 @@ const start = function(){
     }
     convertBoardToDivs()
     assignSquaresToLibs()
-    resetNode()
 
+    
     if (!boardIsValid()) {
-
         generateInputBoard(puzzleNumbers)
         document.getElementById("disp").innerHTML='Invalid Board'
     } else {
+        resetNode()
         showUnsolveButton()
         startLoaderBorder()
         document.getElementById("disp").innerHTML=''
-        intervalID = setInterval(solver,0)
+        intervalID = setInterval(solver,solveSpeed)
     }
 }
 
@@ -186,13 +202,14 @@ const startFast = function(){
     }
     convertBoardToDivs()
     assignSquaresToLibs()
-    resetNode()
+    
 
     if (!boardIsValid()) {
 
         generateInputBoard(puzzleNumbers)
         document.getElementById("disp").innerHTML='Invalid Board'
     } else {
+        resetNode()
         showUnsolveButton()
         startLoaderBorder()
         document.getElementById("disp").innerHTML=''
@@ -234,7 +251,6 @@ const convertBoardToDivs = function () {
 }
 
 const solver = function() {
-
 
     let currentSquare = document.getElementById("square"+String(node))
     //skip past any sqaures that are part of the puzzle
@@ -288,7 +304,7 @@ document.getElementById("solveFastButton").addEventListener("click", startFast);
 document.getElementById("unsolveButton").addEventListener("click", unsolve);
 document.getElementById("resetButton").addEventListener("click", generateInputBoardAnon);
 document.getElementById("buttonDiv").addEventListener('click', (event) => {
-    const isButton = event.target.nodeName === 'BUTTON' & event.target.id!="solveButton";
+    const isButton = event.target.nodeName === 'BUTTON' & (event.target.id!="solveButton" & event.target.id!="solveFastButton");
     if (isButton) {
         document.getElementById("disp").innerHTML=''
     }
@@ -296,3 +312,5 @@ document.getElementById("buttonDiv").addEventListener('click', (event) => {
 document.getElementById("sample").addEventListener("click", function() {
     generateInputBoard(samplePuzzleNumbers)
 });
+
+document.getElementById('speedSlider').addEventListener('click',setNewSolvespeed)
